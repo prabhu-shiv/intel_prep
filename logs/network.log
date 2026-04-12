@@ -1,0 +1,6 @@
+INFO 2024-01-15 09:00:01 Network service started
+ERROR 2024-01-15 09:00:03 Failed to bind socket: port 8080 in use
+WARNING 2024-01-15 09:00:04 Retrying on port 8081
+INFO 2024-01-15 09:00:05 Bound to port 8081
+ERROR 2024-01-15 09:00:10 Packet loss detected on interface eth0
+INFO 2024-01-15 09:00:11 Switching to eth1

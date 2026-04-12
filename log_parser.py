@@ -1,10 +1,18 @@
 import sys
 import argparse
+import os
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Log file analyzer")
-    parser.add_argument("--file", required=True, help="Path to log file")
+    parser.add_argument("--dir", required=True, help="Path to directory containing log files")
     return parser.parse_args()
+
+def get_log_files(directory):
+    log_files = []
+    for file in os.listdir(directory):
+        if file.endswith('.log'):
+            log_files.append(os.path.join(directory, file))
+    return log_files
 
 def parse_log(filename):
     errors = []
@@ -26,32 +34,35 @@ def parse_log(filename):
     return errors, warnings
 
 
-def print_report(filename, errors, warnings):
-    print("=" * 50)
-    print(f"LOG ANALYSIS REPORT - {filename}")
-    print("=" * 50)
-    print(f"Total errors found: {len(errors)}")
-    print(f"Total warnings found: {len(warnings)}")
-    print()
+def print_report(filename, errors, warnings, f):
+    f.write("=" * 50 + "\n")
+    f.write(f"LOG ANALYSIS REPORT - {filename}\n")
+    f.write("=" * 50 + "\n")
+    f.write(f"Total errors found: {len(errors)}\n")
+    f.write(f"Total warnings found: {len(warnings)}\n")
+    f.write("\n")
 
     if errors:
-        print("ERRORS:")
+        f.write("ERRORS:\n")
         for i, error in enumerate(errors, start=1):
-            print(f"[{i}] {error}")
-        print()
+            f.write(f"[{i}] {error}\n")
+        f.write("\n")
 
     if warnings:
-        print("WARNINGS:")
+        f.write("WARNINGS:\n")
         for i, warning in enumerate(warnings, start=1):
-            print(f"[{i}] {warning}")
-        print()
+            f.write(f"[{i}] {warning}\n")
+        f.write("\n")
 
-    print("=" * 50)
+    f.write("=" * 50 + "\n")
 
 def main():
     args = parse_args()
-    errors, warnings = parse_log(args.file)
-    print_report(args.file, errors, warnings)
+    log_files = get_log_files(args.dir)
+    with open("report.txt", "w") as f:
+        for log_file in log_files:
+            errors, warnings = parse_log(log_file)
+            print_report(log_file, errors, warnings, f)
 
 if __name__ == "__main__":
     main()

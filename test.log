@@ -1,0 +1,4 @@
+INFO 2024-01-15 09:00:00 System started
+WARNING 2024-01-15 09:00:05 Low memory warning
+ERROR 2024-01-15 09:00:10 Disk full error
+INFO 2024-01-15 09:00:15 Shutdown

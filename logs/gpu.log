@@ -1,0 +1,5 @@
+INFO 2024-01-15 10:00:01 GPU driver loaded
+WARNING 2024-01-15 10:00:02 GPU temperature above threshold: 87C
+ERROR 2024-01-15 10:00:05 VRAM allocation failed: insufficient memory
+WARNING 2024-01-15 10:00:06 Falling back to shared memory
+INFO 2024-01-15 10:00:07 Inference running on fallback mode
