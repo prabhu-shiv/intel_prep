@@ -58,6 +58,9 @@ def print_report(filename, errors, warnings, f):
 
 def main():
     args = parse_args()
+    if not os.path.isdir(args.dir):
+        print(f"Error: Directory '{args.dir}' does not exist")
+        sys.exit(1)
     log_files = get_log_files(args.dir)
     with open("report.txt", "w") as f:
         for log_file in log_files:
