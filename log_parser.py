@@ -1,10 +1,19 @@
 import sys
 import argparse
 import os
+import logging
+
+def setup_logging(verbose):
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        format="%(levelname)s: %(message)s",
+        level=level
+    )
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Log file analyzer")
     parser.add_argument("--dir", required=True, help="Path to directory containing log files")
+    parser.add_argument("--verbose", action="store_true", help="Enable debug output")
     return parser.parse_args()
 
 def get_log_files(directory):
@@ -19,10 +28,11 @@ def parse_log(filename):
     warnings = []
 
     try:
+        logging.debug(f"Opening file: {filename}")
         with open(filename, "r") as f:
             lines = f.readlines()
-    except FileNotFoundError as e:
-        print(f"Error opening file {filename}: {e}")
+    except FileNotFoundError:
+        logging.error(f"File not found: {filename}")
         sys.exit(1)
 
     for line in lines:
@@ -30,7 +40,7 @@ def parse_log(filename):
             errors.append(line.strip())
         elif "WARNING" in line:
             warnings.append(line.strip())
-
+    logging.debug(f"Found {len(errors)} errors, {len(warnings)} warnings")
     return errors, warnings
 
 
@@ -58,8 +68,9 @@ def print_report(filename, errors, warnings, f):
 
 def main():
     args = parse_args()
+    setup_logging(args.verbose)
     if not os.path.isdir(args.dir):
-        print(f"Error: Directory '{args.dir}' does not exist")
+        logging.error(f"Directory '{args.dir}' does not exist")
         sys.exit(1)
     log_files = get_log_files(args.dir)
     with open("report.txt", "w") as f:
