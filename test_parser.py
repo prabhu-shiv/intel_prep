@@ -32,3 +32,10 @@ def test_get_log_files_filters_correctly(tmp_path):
     (tmp_path / "c.txt").write_text("not a log")
     result = get_log_files(str(tmp_path))
     assert len(result) == 2
+
+
+def test_get_log_files_returns_empty_when_no_log_files(tmp_path):
+    (tmp_path / "a.txt").write_text("not a log")
+    (tmp_path / "b.md").write_text("not a log")
+    result = get_log_files(str(tmp_path))
+    assert result == []
