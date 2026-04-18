@@ -14,8 +14,6 @@ A small Python CLI tool that scans `.log` files in a directory and generates a c
 
 - `log_parser.py` – main parser/report generator.
 - `logs/` – sample input log files (`system.log`, `gpu.log`, `network.log`).
-- `report.txt` – generated output report (example output checked into this repo).
-- `systems.log` – extra sample log file (not used by default unless moved into the target directory).
 
 ## Requirements
 
