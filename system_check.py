@@ -11,7 +11,11 @@ def setup_logging():
 
 
 def run_command(command):
-    result = subprocess.run(command, capture_output=True, text=True)
+    try:
+        result = subprocess.run(command, capture_output=True, text=True)
+    except FileNotFoundError:
+        logging.error(f"Command not found: {' '.join(command)}")
+        return None
     if result.returncode != 0:
         logging.error(f"Command failed: {' '.join(command)}")
         logging.error(f"stderr: {result.stderr.strip()}")
@@ -63,6 +67,15 @@ def check_os_info():
     return True
 
 
+def check_git_version():
+    output = run_command(["git", "--version"])
+    if output is None:
+        return False
+    logging.info("Git version:")
+    logging.info(output)
+    return True
+
+
 def main():
     setup_logging()
     results = []
@@ -70,6 +83,7 @@ def main():
     results.append(check_disk_space())
     results.append(check_memory())
     results.append(check_os_info())
+    results.append(check_git_version())
 
     passed = sum(results)
     total = len(results)
