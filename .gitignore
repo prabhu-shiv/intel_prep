@@ -1,1 +1,2 @@
-report.txt
+report.txt__pycache__/
+.pytest_cache/
