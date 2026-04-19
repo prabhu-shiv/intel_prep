@@ -12,7 +12,6 @@ This repository contains two small Python command-line utilities:
 - `test_parser.py` - tests for log parser behavior.
 - `test_system_check.py` - tests for system check helpers.
 - `logs/` - sample log files (`system.log`, `gpu.log`, `network.log`).
-- `report.txt` - generated report output from the log parser.
 
 ## Requirements
 
