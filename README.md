@@ -1,54 +1,75 @@
-# Intel Prep Log Analyzer
+# Intel Prep Tools
 
-A small Python CLI tool that scans `.log` files in a directory and generates a consolidated error/warning report.
+This repository contains two small Python command-line utilities:
 
-## What this project does
+1. A log analyzer that scans `.log` files for `ERROR` and `WARNING` entries.
+2. A system checker that runs basic environment and hardware-related checks.
 
-`log_parser.py`:
-- Accepts a log directory with `--dir`.
-- Finds files ending in `.log` in that directory.
-- Extracts lines containing `ERROR` and `WARNING`.
-- Writes a structured summary to `report.txt`.
+## Project contents
 
-## Repository layout
-
-- `log_parser.py` – main parser/report generator.
-- `logs/` – sample input log files (`system.log`, `gpu.log`, `network.log`).
+- `log_parser.py` - parses log files and writes a summary report.
+- `system_check.py` - runs system health and environment checks.
+- `test_parser.py` - tests for log parser behavior.
+- `test_system_check.py` - tests for system check helpers.
+- `logs/` - sample log files (`system.log`, `gpu.log`, `network.log`).
+- `report.txt` - generated report output from the log parser.
 
 ## Requirements
 
 - Python 3.8+
-- No third-party dependencies
+- `pytest` for running tests
 
-## Usage
+Install test dependency:
 
-From the repository root:
+```bash
+python3 -m pip install pytest
+```
+
+## Log analyzer
+
+### What it does
+
+`log_parser.py`:
+- Accepts a log directory with `--dir`.
+- Finds files ending in `.log`.
+- Extracts lines containing uppercase `ERROR` and `WARNING`.
+- Writes a structured summary to `report.txt`.
+
+### Run it
 
 ```bash
 python3 log_parser.py --dir logs
 ```
 
-This command regenerates `report.txt` based on all `.log` files in `logs/`.
+## System checker
 
-## Example output
+### What it does
 
-The generated `report.txt` contains one section per log file with:
-- total errors
-- total warnings
-- numbered list of error lines
-- numbered list of warning lines
+`system_check.py` runs these checks and reports pass/fail:
+- Python version (`python3 --version`)
+- Disk space command output (`df -h /`)
+- Disk usage threshold (`df /`, fails if usage is above 90%)
+- Memory info (`free -h`)
+- OS info (`uname -a`)
+- Git version (`git --version`)
 
-## Notes and behavior
+Each check logs details and returns a boolean result. The script exits with status code `1` if any check fails.
 
-- The parser currently detects only uppercase tokens: `ERROR` and `WARNING`.
-- If the provided directory does not exist, the script exits with an error.
-- If a log file cannot be opened, the script exits immediately.
-- Output file path is fixed to `report.txt` in the current working directory.
+### Run it
 
-## Quick development ideas
+```bash
+python3 system_check.py
+```
 
-Potential improvements:
-- Support case-insensitive matching (`error`, `warning`).
-- Add output path as a CLI option (e.g., `--out report.txt`).
-- Include `INFO` counts or severity filters.
-- Add unit tests for parsing and reporting functions.
+## Tests
+
+Run all tests:
+
+```bash
+pytest -q
+```
+
+Current test coverage includes:
+- log parsing behavior
+- log file filtering
+- `run_command()` handling for a nonexistent command
