@@ -47,6 +47,36 @@ def check_disk_space():
     return True
 
 
+def check_disk_usage():
+    output = run_command(["df", "/"])
+    if output is None:
+        return False
+
+    lines = output.split("\n")
+    if len(lines) < 2:
+        logging.error("FAIL: Unexpected df output format")
+        return False
+
+    parts = lines[1].split()
+    if len(parts) < 5:
+        logging.error("FAIL: Could not parse disk usage from df output")
+        return False
+
+    usage_str = parts[4].replace("%", "")
+    try:
+        usage = int(usage_str)
+    except ValueError:
+        logging.error(f"FAIL: Invalid disk usage value: {parts[4]}")
+        return False
+
+    if usage > 90:
+        logging.error(f"FAIL: Disk usage is {usage}% (above 90%)")
+        return False
+
+    logging.info(f"PASS: Disk usage is {usage}% (within threshold)")
+    return True
+
+
 def check_memory():
     output = run_command(["free", "-h"])
     if output is None:
@@ -81,6 +111,7 @@ def main():
     results = []
     results.append(check_python_version())
     results.append(check_disk_space())
+    results.append(check_disk_usage())
     results.append(check_memory())
     results.append(check_os_info())
     results.append(check_git_version())
