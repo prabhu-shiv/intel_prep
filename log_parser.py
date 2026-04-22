@@ -10,11 +10,13 @@ def setup_logging(verbose):
         level=level
     )
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Log file analyzer")
     parser.add_argument("--dir", required=True, help="Path to directory containing log files")
     parser.add_argument("--verbose", action="store_true", help="Enable debug output")
     return parser.parse_args()
+
 
 def get_log_files(directory):
     log_files = []
@@ -22,6 +24,7 @@ def get_log_files(directory):
         if file.endswith('.log'):
             log_files.append(os.path.join(directory, file))
     return log_files
+
 
 def parse_log(filename):
     errors = []
@@ -66,6 +69,7 @@ def print_report(filename, errors, warnings, f):
 
     f.write("=" * 50 + "\n")
 
+
 def main():
     args = parse_args()
     setup_logging(args.verbose)
@@ -77,6 +81,7 @@ def main():
         for log_file in log_files:
             errors, warnings = parse_log(log_file)
             print_report(log_file, errors, warnings, f)
+
 
 if __name__ == "__main__":
     main()
