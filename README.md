@@ -1,9 +1,10 @@
 # Intel Prep Tools
 
-This repository contains two small Python command-line utilities:
+This repository contains a set of small Python command-line utilities:
 
 1. A log analyzer that scans `.log` files for `ERROR` and `WARNING` entries.
 2. A system checker that runs basic environment and hardware-related checks.
+3. Hardware utilization monitoring
 
 ## Project contents
 
@@ -12,6 +13,7 @@ This repository contains two small Python command-line utilities:
 - `test_parser.py` - tests for log parser behavior.
 - `test_system_check.py` - tests for system check helpers.
 - `logs/` - sample log files (`system.log`, `gpu.log`, `network.log`).
+- `hw_monitor.py` - monitors CPU utilization under workload and generates a plot
 
 ## Requirements
 
@@ -22,6 +24,9 @@ Install test dependency:
 
 ```bash
 python3 -m pip install pytest
+```
+```bash
+python3 -m pip install pytest psutil matplotlib
 ```
 
 ## Log analyzer
@@ -60,6 +65,25 @@ Each check logs details and returns a boolean result. The script exits with stat
 python3 system_check.py
 ```
 
+## Hardware monitor
+
+### What it does
+
+`hw_monitor.py` performs real-time CPU monitoring under synthetic workload:
+- Detects: CPU model `lscpu`, GPU model `lspci`, NPU
+- Generates CPU load using multiprocessing
+- Samples CPU utilization using `psutil`
+- Computes: Average usage, Peak usage, Minimum usage
+- Plots utilization graph `utilization.png`
+
+The workload runs in parallel across all CPU cores.
+
+### Run it
+
+```bash
+python3 hw_monitor.py --duration 10
+```
+
 ## Tests
 
 Run all tests:
@@ -72,3 +96,4 @@ Current test coverage includes:
 - log parsing behavior
 - log file filtering
 - `run_command()` handling for a nonexistent command
+- hardware monitoing
