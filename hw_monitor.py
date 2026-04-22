@@ -4,6 +4,7 @@ import time
 import logging
 import argparse
 import matplotlib.pyplot as plt
+import multiprocessing
 
 
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
@@ -38,12 +39,25 @@ def monitor_cpu(duration, interval=1):
     return samples
 
 
-def run_workload():
-    # CPU workload — matrix multiplication
-    logging.info("Running CPU workload...")
+def _worker(duration):
+    end_time = time.time() + duration
     result = 0
-    for i in range(10**7):
-        result += i * i
+    while time.time() < end_time:
+        for i in range(10**5):
+            result += i * i
+
+
+def run_workload(duration):
+    logging.info("Running CPU workload...")
+    time.sleep(2)  # Give monitor a moment to start
+    cores = multiprocessing.cpu_count()
+    processes = []
+    for _ in range(cores):
+        p = multiprocessing.Process(target=_worker, args=(duration,))
+        p.start()
+        processes.append(p)
+    for p in processes:
+        p.join()
     logging.info("Workload complete")
 
 
@@ -77,10 +91,11 @@ def main():
     logging.info(f"NPU: {get_npu_info()}")
 
     import threading
-    workload_thread = threading.Thread(target=run_workload)
+    workload_thread = threading.Thread(target=run_workload, args=(args.duration,))
     workload_thread.start()
 
     cpu_samples = monitor_cpu(args.duration)
+    print(f"Collected {len(cpu_samples)} samples")
     workload_thread.join()
 
     plot_utilization(cpu_samples, args.duration)
@@ -88,4 +103,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
