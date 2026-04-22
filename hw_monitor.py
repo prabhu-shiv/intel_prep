@@ -92,10 +92,16 @@ def main():
 
     import threading
     workload_thread = threading.Thread(target=run_workload, args=(args.duration,))
+
     workload_thread.start()
 
     cpu_samples = monitor_cpu(args.duration)
     print(f"Collected {len(cpu_samples)} samples")
+    print(f"\nSummary:")
+    print(f"  Average CPU usage: {sum(cpu_samples)/len(cpu_samples):.1f}%")
+    print(f"  Peak CPU usage: {max(cpu_samples):.1f}%")
+    print(f"  Min CPU usage: {min(cpu_samples):.1f}%")
+
     workload_thread.join()
 
     plot_utilization(cpu_samples, args.duration)
