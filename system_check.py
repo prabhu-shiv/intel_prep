@@ -1,6 +1,7 @@
 import subprocess
 import logging
 import sys
+import psutil
 
 
 def setup_logging():
@@ -106,12 +107,49 @@ def check_git_version():
     return True
 
 
+def check_memory_usage():
+    try:
+        memory = psutil.virtual_memory()
+        usage_percent = memory.percent
+    except Exception:
+        logging.info("psutil not available, using 'free' command fallback")
+        output = run_command(["free", "-b"])
+        if output is None:
+            return False
+        
+        lines = output.split("\n")
+        if len(lines) < 2:
+            logging.error("FAIL: Unexpected 'free' command output format")
+            return False
+        
+        parts = lines[1].split()
+        if len(parts) < 3:
+            logging.error("FAIL: Could not parse memory from 'free' output")
+            return False
+        
+        try:
+            total = int(parts[1])
+            used = int(parts[2])
+            usage_percent = (used / total) * 100
+        except (ValueError, ZeroDivisionError):
+            logging.error(f"FAIL: Could not calculate memory percentage from 'free' output")
+            return False
+    
+    if usage_percent > 85:
+        logging.error(f"FAIL: Memory usage is {usage_percent:.1f}% (above 85%)")
+        return False
+    
+    logging.info(f"PASS: Memory usage is {usage_percent:.1f}% (within threshold)")
+    return True
+
+
 def main():
     setup_logging()
     results = []
     results.append(check_python_version())
     results.append(check_disk_space())
     results.append(check_disk_usage())
+    results.append(check_memory_usage())
     results.append(check_memory())
     results.append(check_os_info())
     results.append(check_git_version())
