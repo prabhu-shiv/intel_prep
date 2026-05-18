@@ -27,46 +27,7 @@ def get_gpu_info():
 
 
 def get_npu_info():
-    # NPU detection — expand later for Intel platforms
     return "No NPU detected on this hardware"
-
-
-def check_memory_usage(threshold_percent=90):
-    """Check memory usage using the `free` command.
-
-    Parses the `Mem:` line from `free` to extract total and used memory (bytes),
-    computes percentage used and raises RuntimeError if usage exceeds
-    `threshold_percent`.
-
-    Returns a tuple: (used_bytes, total_bytes, percent_used_float).
-    """
-    try:
-        result = subprocess.run(["free", "-b"], capture_output=True, text=True, check=True)
-        for line in result.stdout.splitlines():
-            if line.strip().startswith("Mem:"):
-                parts = line.split()
-                if len(parts) >= 3:
-                    total = int(parts[1])
-                    used = int(parts[2])
-                    percent = (used / total) * 100 if total > 0 else 0.0
-                    logging.info(f"Memory: {used}/{total} bytes ({percent:.1f}%)")
-                    if percent > float(threshold_percent):
-                        raise RuntimeError(f"Memory usage too high: {percent:.1f}% > {threshold_percent}%")
-                    return used, total, percent
-        raise RuntimeError("Could not parse `free` output")
-    except Exception as e:
-        try:
-            vm = psutil.virtual_memory()
-            total = int(vm.total)
-            used = int(vm.total - vm.available)
-            percent = vm.percent
-            logging.info(f"Memory (psutil): {used}/{total} bytes ({percent:.1f}%)")
-            if percent > float(threshold_percent):
-                raise RuntimeError(f"Memory usage too high: {percent:.1f}% > {threshold_percent}%")
-            return used, total, percent
-        except Exception:
-            raise
-
 
 def monitor_cpu(duration, interval=1):
     samples = []
