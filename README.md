@@ -13,7 +13,8 @@ This repository contains a set of small Python command-line utilities:
 - `test_parser.py` - tests for log parser behavior.
 - `test_system_check.py` - tests for system check helpers.
 - `logs/` - sample log files (`system.log`, `gpu.log`, `network.log`).
-- `hw_monitor.py` - monitors CPU utilization under workload and generates a plot
+- `hw_monitor.py` - monitors CPU utilization under workload and generates a plot.
+- `inference_agent.py` - runs ONNX model inference on CPU/GPU/NPU and plots device utilization.
 
 ## Requirements
 
@@ -83,6 +84,42 @@ The workload runs in parallel across all CPU cores.
 ```bash
 python3 hw_monitor.py --duration 10
 ```
+
+## Inference agent
+
+### What it does
+
+`inference_agent.py` runs ONNX model inference on available devices:
+- Detects: CPU, GPU (CUDA), NPU availability
+- Loads a MobileNetV2 ONNX model
+- Runs inference workload on selected device(s)
+- Monitors device utilization using `psutil`
+- Generates utilization plot: `inference_utilization.png`
+
+### Setup
+
+Download the MobileNetV2 ONNX model manually:
+
+```bash
+wget https://github.com/onnx/models/raw/main/validated/vision/classification/mobilenet/mobilenetv2-1.0.onnx -O mobilenetv2.onnx
+```
+
+Or use `curl`:
+
+```bash
+curl -L https://github.com/onnx/models/raw/main/validated/vision/classification/mobilenet/mobilenetv2-1.0.onnx -o mobilenetv2.onnx
+```
+
+### Run it
+
+```bash
+python3 inference_agent.py --device all --duration 10
+```
+
+Options:
+- `--device`: `cpu`, `gpu`, `npu`, or `all` (default: `cpu`)
+- `--duration`: inference duration in seconds (default: `10`)
+- `--model`: path to ONNX model (default: `mobilenetv2.onnx`)
 
 ## Tests
 
