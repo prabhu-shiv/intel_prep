@@ -67,17 +67,34 @@ class CPUAgent(InferenceAgent):
 class GPUAgent(InferenceAgent):
     def __init__(self, model_path):
         super().__init__("GPU", model_path)
+        self.provider_used = None
 
     def setup(self):
-        providers = ort.get_available_providers()
-        if "CUDAExecutionProvider" in providers:
-            self.session = ort.InferenceSession(
-                self.model_path, providers=["CUDAExecutionProvider"]
-            )
-            self.available = True
-            logging.info("GPU agent ready")
-        else:
-            logging.warning("GPU agent: CUDAExecutionProvider not available, skipping")
+        available = ort.get_available_providers()
+        
+        # Priority order — pick first available GPU provider
+        gpu_providers = [
+            "CUDAExecutionProvider",       # NVIDIA
+            "ROCMExecutionProvider",       # AMD
+            "DmlExecutionProvider",        # Windows DirectML (any GPU)
+            "OpenVINOExecutionProvider",   # Intel
+            "CoreMLExecutionProvider",     # Apple
+        ]
+
+        for provider in gpu_providers:
+            if provider in available:
+                try:
+                    self.session = ort.InferenceSession(
+                        self.model_path, providers=[provider]
+                    )
+                    self.provider_used = provider
+                    self.available = True
+                    logging.info(f"GPU agent ready — using {provider}")
+                    return
+                except Exception as e:
+                    logging.warning(f"GPU agent: {provider} failed: {e}")
+
+        logging.warning("GPU agent: no GPU execution provider available")
 
     def run_inference(self, duration):
         if not self.available:
@@ -104,15 +121,50 @@ class GPUAgent(InferenceAgent):
 class NPUAgent(InferenceAgent):
     def __init__(self, model_path):
         super().__init__("NPU", model_path)
+        self.provider_used = None
 
     def setup(self):
-        logging.warning("NPU agent: no NPU detected on this hardware, skipping")
+        available = ort.get_available_providers()
+
+        npu_providers = [
+            "OpenVINOExecutionProvider",  # Intel NPU
+            "QNNExecutionProvider",       # Qualcomm NPU
+            "CoreMLExecutionProvider",    # Apple Neural Engine
+        ]
+
+        for provider in npu_providers:
+            if provider in available:
+                try:
+                    self.session = ort.InferenceSession(
+                        self.model_path, providers=[provider]
+                    )
+                    self.provider_used = provider
+                    self.available = True
+                    logging.info(f"NPU agent ready — using {provider}")
+                    return
+                except Exception as e:
+                    logging.warning(f"NPU agent: {provider} failed: {e}")
+
+        logging.warning("NPU agent: no NPU detected on this hardware — skipping")
 
     def run_inference(self, duration):
-        logging.warning("NPU agent skipped — not available")
+        if not self.available:
+            return  # silently skip — warning already logged in setup()
+        input_name = self.session.get_inputs()[0].name
+        end_time = time.time() + duration
+        count = 0
+        while time.time() < end_time:
+            dummy = np.random.randn(1, 3, 224, 224).astype(np.float32)
+            self.session.run(None, {input_name: dummy})
+            count += 1
+        logging.info(f"NPU: completed {count} inference runs")
 
     def monitor(self, duration, interval=1):
-        self.utilization = []
+        if not self.available:
+            self.utilization = []
+            return
+        # NPU utilization monitoring — extend per platform
+        self.utilization = [0] * int(duration / interval)
 
 
 # ── Orchestrator ──────────────────────────────────────────────
